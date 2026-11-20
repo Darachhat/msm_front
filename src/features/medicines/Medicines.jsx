@@ -5,6 +5,7 @@ import { medicineForms, medicines as medicinesApi } from '@/lib/backend';
 import { Badge, Empty, Field, Loading, Modal, PageHeader, Pagination, Tabs, usePaged } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthContext';
 import Select from '@/components/ui/Select';
+import { useConfirm } from '@/app/ConfirmContext';
 import { CATEGORY_COLORS, CATEGORY_LABELS, useLang } from '@/app/LangContext';
 import { useToast } from '@/app/ToastContext';
 import { checkForm, serverFieldErrors, useFieldErrors } from '@/lib/validation';
@@ -16,6 +17,7 @@ export default function Medicines() {
   const { tr } = useLang();
   const { can } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState('INJECTION');
@@ -40,7 +42,13 @@ export default function Medicines() {
   const { pageRows, pager } = usePaged(rows, 10, [category, search, showInactive]);
 
   const remove = async (m) => {
-    if (!window.confirm(tr(`លុប "${m.name}"? បើធ្លាប់មានស្តុក វានឹងត្រូវបិទ (មិនលុប)។`, `Delete "${m.name}"? If it has stock history it will be deactivated instead.`))) return;
+    const ok = await confirm({
+      title: tr('លុបឱសថ', 'Delete medicine'),
+      message: tr(`លុប "${m.name}"? បើធ្លាប់មានស្តុក វានឹងត្រូវបិទ (មិនលុប)។`, `Delete "${m.name}"? If it has stock history it will be deactivated instead.`),
+      confirmLabel: tr('លុប', 'Delete'),
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       const data = await medicinesApi.remove(m._id);
       toast(data.deactivated ? tr('បានបិទ', 'Deactivated') : tr('បានលុប', 'Deleted'));

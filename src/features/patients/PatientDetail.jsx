@@ -6,6 +6,7 @@ import { patients, usage as usageApi } from '@/lib/backend';
 import { medLabel } from '@/components/pickers';
 import { Badge, Empty, Loading } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useConfirm } from '@/app/ConfirmContext';
 import { CATEGORY_LABELS, PAYMENT_LABELS, useLang } from '@/app/LangContext';
 import { useToast } from '@/app/ToastContext';
 import { fmtDate, toDayStr } from '@/lib/dates';
@@ -18,6 +19,7 @@ export default function PatientDetail() {
   const { tr } = useLang();
   const { can } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [patient, setPatient] = useState(null);
   const [usage, setUsage] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,7 +60,13 @@ export default function PatientDetail() {
   }, [usage]);
 
   const remove = async (u) => {
-    if (!window.confirm(tr('លុបកំណត់ត្រានេះ? ចំនួនឱសថនឹងត្រូវបញ្ចូលទៅស្តុកវិញ។', 'Delete this record? The quantity will be returned to stock.'))) return;
+    const ok = await confirm({
+      title: tr('លុបកំណត់ត្រា', 'Delete record'),
+      message: tr('លុបកំណត់ត្រានេះ? ចំនួនឱសថនឹងត្រូវបញ្ចូលទៅស្តុកវិញ។', 'Delete this record? The quantity will be returned to stock.'),
+      confirmLabel: tr('លុប', 'Delete'),
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await usageApi.remove(u._id);
       toast(tr('បានលុប', 'Deleted'));

@@ -6,6 +6,7 @@ import { errMsg } from '@/lib/api';
 import { patients } from '@/lib/backend';
 import { Badge, Empty, Loading, PageHeader, Pagination } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useConfirm } from '@/app/ConfirmContext';
 import { useLang } from '@/app/LangContext';
 import { useToast } from '@/app/ToastContext';
 import { fmtDate } from '@/lib/dates';
@@ -15,6 +16,7 @@ export default function Patients() {
   const { tr } = useLang();
   const { can } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [search, setSearch] = useState('');
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
@@ -43,7 +45,13 @@ export default function Patients() {
   useEffect(load, [load]);
 
   const remove = async (p) => {
-    if (!window.confirm(tr(`លុបអ្នកជំងឺ "${p.name}"?`, `Delete patient "${p.name}"?`))) return;
+    const ok = await confirm({
+      title: tr('លុបអ្នកជំងឺ', 'Delete patient'),
+      message: tr(`លុបអ្នកជំងឺ "${p.name}"?`, `Delete patient "${p.name}"?`),
+      confirmLabel: tr('លុប', 'Delete'),
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await patients.remove(p._id);
       toast(tr('បានលុប', 'Deleted'));

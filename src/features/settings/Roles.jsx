@@ -4,6 +4,7 @@ import { errMsg } from '@/lib/api';
 import { roles as rolesApi, SERVICES } from '@/lib/backend';
 import { Badge, Field, Loading, Modal } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useConfirm } from '@/app/ConfirmContext';
 import { ACTION_LABELS, MODULE_LABELS, useLang } from '@/app/LangContext';
 import { useToast } from '@/app/ToastContext';
 import { checkForm, serverFieldErrors, useFieldErrors } from '@/lib/validation';
@@ -16,6 +17,7 @@ export default function Roles() {
   const { tr } = useLang();
   const { can } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(null);
@@ -31,7 +33,13 @@ export default function Roles() {
   useEffect(load, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const remove = async (r) => {
-    if (!window.confirm(tr(`លុបតួនាទី "${r.name}"?`, `Delete role "${r.name}"?`))) return;
+    const ok = await confirm({
+      title: tr('លុបតួនាទី', 'Delete role'),
+      message: tr(`លុបតួនាទី "${r.name}"?`, `Delete role "${r.name}"?`),
+      confirmLabel: tr('លុប', 'Delete'),
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await rolesApi.remove(r._id);
       toast(tr('បានលុប', 'Deleted'));

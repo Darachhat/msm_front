@@ -5,6 +5,7 @@ import { users as usersApi } from '@/lib/backend';
 import Select from '@/components/ui/Select';
 import { Badge, Empty, Field, Loading, Modal } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useConfirm } from '@/app/ConfirmContext';
 import { useLang } from '@/app/LangContext';
 import { useToast } from '@/app/ToastContext';
 import usePasswordPolicy from '@/features/auth/usePasswordPolicy';
@@ -16,6 +17,7 @@ export default function Users() {
   const { tr } = useLang();
   const { can, user: me } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +40,13 @@ export default function Users() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const remove = async (u) => {
-    if (!window.confirm(tr(`លុបអ្នកប្រើ "${u.username}"?`, `Delete user "${u.username}"?`))) return;
+    const ok = await confirm({
+      title: tr('លុបអ្នកប្រើ', 'Delete user'),
+      message: tr(`លុបអ្នកប្រើ "${u.username}"?`, `Delete user "${u.username}"?`),
+      confirmLabel: tr('លុប', 'Delete'),
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await usersApi.remove(u.id);
       toast(tr('បានលុប', 'Deleted'));

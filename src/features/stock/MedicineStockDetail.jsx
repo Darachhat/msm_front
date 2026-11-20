@@ -6,6 +6,7 @@ import { medLabel } from '@/components/pickers';
 import Select from '@/components/ui/Select';
 import { Badge, Empty, Field, Loading, Modal, Tabs } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthContext';
+import { useConfirm } from '@/app/ConfirmContext';
 import { CATEGORY_LABELS, OUT_TYPE_LABELS, useLang } from '@/app/LangContext';
 import { useToast } from '@/app/ToastContext';
 import { daysUntil, fmtDate, toDayStr, todayStr } from '@/lib/dates';
@@ -26,6 +27,7 @@ export default function MedicineStockDetail({ medicine, onClose, onChanged, onAd
   const { tr } = useLang();
   const { can } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [tab, setTab] = useState('batches');
   const [batches, setBatches] = useState([]);
   const [moves, setMoves] = useState([]);
@@ -60,7 +62,13 @@ export default function MedicineStockDetail({ medicine, onClose, onChanged, onAd
   };
 
   const removeBatch = async (b) => {
-    if (!window.confirm(tr('លុបឡូត៍នេះ?', 'Delete this batch?'))) return;
+    const ok = await confirm({
+      title: tr('លុបឡូត៍ស្តុក', 'Delete stock batch'),
+      message: tr('លុបឡូត៍នេះ?', 'Delete this batch?'),
+      confirmLabel: tr('លុប', 'Delete'),
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await stock.removeBatch(b._id);
       toast(tr('បានលុប', 'Deleted'));

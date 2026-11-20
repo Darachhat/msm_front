@@ -2,9 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from '@/app/App';
-import { AuthProvider } from '@/features/auth/AuthContext';
+import { ConfirmProvider } from '@/app/ConfirmContext';
 import { LangProvider } from '@/app/LangContext';
 import { ToastProvider } from '@/app/ToastContext';
+import { AuthProvider } from '@/features/auth/AuthContext';
 import './index.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
@@ -12,9 +13,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <LangProvider>
         <ToastProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
+          <ConfirmProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </ConfirmProvider>
         </ToastProvider>
       </LangProvider>
     </BrowserRouter>

@@ -7,6 +7,7 @@ import { medLabel, PeriodPicker } from '@/components/pickers';
 import { Badge, Empty, Loading, PageHeader, Pagination } from '@/components/ui';
 import { useAuth } from '@/features/auth/AuthContext';
 import Select from '@/components/ui/Select';
+import { useConfirm } from '@/app/ConfirmContext';
 import { CATEGORY_COLORS, CATEGORY_LABELS, PAYMENT_LABELS, useLang } from '@/app/LangContext';
 import { useToast } from '@/app/ToastContext';
 import { fmtDate, fmtDateTime, periodRange, todayStr } from '@/lib/dates';
@@ -18,6 +19,7 @@ export default function Usage() {
   const { tr } = useLang();
   const { can } = useAuth();
   const toast = useToast();
+  const confirm = useConfirm();
   const [pp, setPp] = useState({ period: 'daily', date: todayStr() });
   const [category, setCategory] = useState('');
   const [payment, setPayment] = useState('');
@@ -38,7 +40,13 @@ export default function Usage() {
   useEffect(load, [load]);
 
   const remove = async (u) => {
-    if (!window.confirm(tr('លុបកំណត់ត្រានេះ? ចំនួនឱសថនឹងត្រូវបញ្ចូលទៅស្តុកវិញ។', 'Delete this record? The quantity will be returned to stock.'))) return;
+    const ok = await confirm({
+      title: tr('លុបកំណត់ត្រា', 'Delete record'),
+      message: tr('លុបកំណត់ត្រានេះ? ចំនួនឱសថនឹងត្រូវបញ្ចូលទៅស្តុកវិញ។', 'Delete this record? The quantity will be returned to stock.'),
+      confirmLabel: tr('លុប', 'Delete'),
+      tone: 'danger',
+    });
+    if (!ok) return;
     try {
       await usageApi.remove(u._id);
       toast(tr('បានលុប', 'Deleted'));
